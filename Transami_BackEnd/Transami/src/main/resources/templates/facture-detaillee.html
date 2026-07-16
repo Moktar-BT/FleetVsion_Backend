@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xml:lang="fr">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title th:text="'Facture #' + ${factureNumero}">Facture</title>
+    <style type="text/css">
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            font-size: 8.5pt;
+            color: #000;
+            background: #fff;
+        }
+
+        @page {
+            size: A4;
+            margin-top: 105px;
+            margin-bottom: 58px;
+            margin-left: 0;
+            margin-right: 0;
+            @top-center    { content: element(pageHeader); }
+            @bottom-center { content: element(pageFooter); }
+        }
+
+        #page-header {
+            position: running(pageHeader);
+            width: 21cm;
+            height: 95px;
+            border-bottom: 1px solid #000;
+        }
+        .hdr-outer { display: table; width: 100%; height: 95px; }
+        .hdr-pad   { display: table-cell; vertical-align: middle; padding: 0 28px 0 18px; }
+        .hdr-cols  { display: table; width: 100%; }
+        .hdr-logo-cell { display: table-cell; vertical-align: middle; width: 80px; }
+        .hdr-info-cell { display: table-cell; vertical-align: middle; }
+        .co-logo    { width: 120px; }
+        .co-name    { font-size: 14pt; font-weight: bold; }
+        .co-tagline,
+        .co-coords  { font-size: 7pt; }
+
+        #page-footer {
+            position: running(pageFooter);
+            width: 21cm;
+            height: 48px;
+            border-top: 1px solid #000;
+            margin-top: 10px;
+        }
+        .ftr-outer { display: table; width: 100%; height: 48px; }
+        .ftr-pad   { display: table-cell; vertical-align: middle; padding: 0 28px 0 18px; }
+        .ftr-cols  { display: table; width: 100%; }
+        .ftr-left  { font-size: 7pt; display: table-cell; }
+        .ftr-right { font-size: 7pt; display: table-cell; text-align: right; }
+        .page-num:before { content: "Page " counter(page) " / " counter(pages); }
+
+        .content { padding: 16px 28px 18px 22px; }
+
+        .top-section { display: table; width: 100%; margin-bottom: 16px; }
+        .client-box {
+            display: table-cell; width: 52%;
+            border: 1px solid #000; padding: 10px;
+        }
+        .client-label  { font-size: 7pt; text-transform: uppercase; font-weight: bold; }
+        .client-name   { font-size: 14pt; font-weight: bold; }
+        .client-detail { font-size: 9pt; }
+        .meta-cell  { display: table-cell; width: 44%; padding-left: 20px; }
+        .meta-row   { display: table; width: 100%; }
+        .mk         { display: table-cell; font-size: 11pt; }
+        .mv         { display: table-cell; font-size: 16pt; font-weight: bold; text-align: right; }
+        .mv-small   { display: table-cell; font-size: 13pt; text-align: right; }
+        .meta-hr    { border-top: 1px solid #000; margin: 5px 0; }
+
+        .section-title {
+            font-size: 8pt; font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1px solid #000;
+            margin-bottom: 6px; padding-bottom: 2px;
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+            margin-bottom: 10px;
+            -fs-table-paginate: paginate;
+        }
+        .invoice-table thead { display: table-header-group; }
+        .invoice-table th {
+            font-size: 7.5pt; font-weight: bold;
+            text-align: center; padding: 4px 3px;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+            background-color: #f0f0f0;
+        }
+        .invoice-table td {
+            padding: 5px 4px; font-size: 8pt;
+            border-bottom: 1px solid #ccc;
+            border-right: 1px solid #000;
+            vertical-align: middle;
+        }
+        .invoice-table th:last-child,
+        .invoice-table td:last-child { border-right: none; }
+        .invoice-table td.r   { text-align: right; }
+        .invoice-table td.c   { text-align: center; }
+        .invoice-table td.ref { font-weight: bold; }
+        .no-rows td { text-align: center; font-style: italic; color: #666; }
+        .invoice-table tbody tr.even { background-color: #fafafa; }
+        .invoice-table tbody tr { page-break-inside: avoid; }
+
+        .bottom-section {
+            display: table; width: 100%;
+            margin-top: 6px;
+            page-break-inside: avoid;
+        }
+        .bs-left {
+            display: table-cell; width: 50%;
+            vertical-align: bottom; padding-right: 8px;
+        }
+        .bs-right {
+            display: table-cell; width: 50%;
+            vertical-align: bottom; padding-left: 8px;
+        }
+
+        .tva-recap-table {
+            width: 100%; border-collapse: collapse;
+            border: 1px solid #000; margin-bottom: 8px;
+        }
+        .tva-recap-table th {
+            font-size: 7pt; font-weight: bold;
+            text-align: center; padding: 3px 4px;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+            background-color: #f0f0f0;
+        }
+        .tva-recap-table td {
+            font-size: 8pt; padding: 4px;
+            border-bottom: 1px solid #ccc;
+            border-right: 1px solid #000;
+            text-align: right;
+        }
+        .tva-recap-table th:last-child,
+        .tva-recap-table td:last-child { border-right: none; }
+
+        .totals-table {
+            width: 100%; border-collapse: collapse;
+            border: 1px solid #000;
+        }
+        .totals-table td   { padding: 4px 8px; font-size: 9pt; }
+        .totals-table .tv  { text-align: right; font-weight: bold; }
+        .totals-table tr   { border-bottom: 1px solid #ccc; }
+        .totals-table tr.separator td { border-top: 1px solid #000; padding-top: 3px; }
+        .totals-table tr.ttc td {
+            font-weight: bold; font-size: 10pt;
+            border-top: 2px solid #000;
+        }
+
+        /* ── Section signatures : pleine largeur, en bas de toutes les sections ── */
+        .sig-section {
+            display: table;
+            width: 100%;
+            margin-top: 22px;
+            page-break-inside: avoid;
+        }
+        .sig-cell  {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding: 0 6px;
+        }
+        .sig-cell.left  { padding-left: 0; }
+        .sig-cell.right { padding-right: 0; }
+        .sig-label { text-align: center; font-size: 7pt; margin-bottom: 3px; text-transform: uppercase; font-weight: bold; }
+        .sig-box   { border: 1px solid #000; height: 100px; }
+
+    </style>
+</head>
+<body>
+
+<!-- EN-TÊTE -->
+<div id="page-header">
+    <div class="hdr-outer">
+        <div class="hdr-pad">
+            <div class="hdr-cols">
+                <div class="hdr-logo-cell"
+                     th:if="${companyLogo != null and !#strings.isEmpty(companyLogo)}">
+                    <img class="co-logo" th:src="${companyLogo}" alt="Logo"/>
+                </div>
+                <div class="hdr-info-cell">
+                    <div class="co-name" th:text="${companyName}">Nom Entreprise</div>
+                    <div class="co-tagline">Transport de marchandises</div>
+                    <div class="co-tagline">TVA: <span th:text="${companyTva}">Numéro TVA</span></div>
+                    <div class="co-coords">Adresse&#160;: <span th:text="${companyAddress}">Adresse</span>&#160;&#183;&#160;</div>
+                    <div class="co-coords">T&#233;l&#160;: <span th:text="${companyPhone}">00 000 000</span>&#160;&#183;&#160;</div>
+                    <div class="co-coords">E-mail: <span th:text="${companyEmail}">email@exemple.com</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PIED DE PAGE -->
+<div id="page-footer">
+    <div class="ftr-outer">
+        <div class="ftr-pad">
+            <div class="ftr-cols">
+                <div class="ftr-left">
+                    <span th:text="${companyName}">Entreprise</span>&#160;&#183;&#160;
+                    <span th:text="${companyAddress}">Adresse</span>&#160;&#183;&#160;
+                    T&#233;l&#160;: <span th:text="${companyPhone}">T&#233;l&#233;phone</span>&#160;&#183;&#160;
+                    <span th:text="${companyEmail}">Email</span>
+                </div>
+                <div class="ftr-right"><span class="page-num">&#160;</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENU -->
+<div class="content">
+
+    <div class="top-section">
+        <div class="client-box">
+            <div class="client-label">Factur&#233;&#160;&#224;</div>
+            <div class="client-name"   th:text="${clientNom}">Client</div>
+            <div class="client-detail" th:text="${clientLocalisation}">Localisation</div>
+            <div class="client-detail" th:if="${clientMatF != null and !#strings.isEmpty(clientMatF)}">
+                Mat. Fiscale: <span th:text="${clientMatF}">000000000</span>
+            </div>
+        </div>
+        <div class="meta-cell">
+            <div class="meta-row">
+                <div class="mk">Num&#233;ro</div>
+                <div class="mv" th:text="${factureNumero}">001/2026</div>
+            </div>
+            <div class="meta-row">
+                <div class="mk">Date</div>
+                <div class="mv-small" th:text="${factureDate}">01/01/2025</div>
+            </div>
+            <hr class="meta-hr"/>
+        </div>
+    </div>
+
+    <div class="section-title">
+        D&#233;tail des prestations
+        <span th:if="${!isDetaillee}">&#160;(r&#233;sum&#233; par produit)</span>
+    </div>
+
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th style="width:9%">R&#233;f&#233;rence</th>
+            <th style="width:22%">D&#233;signation</th>
+            <th style="width:8%">Unit&#233;</th>
+            <th style="width:8%"  class="r">Quantit&#233;</th>
+            <th style="width:11%" class="r">Prix unit. (TND)</th>
+            <th style="width:6%"  class="c">TVA&#160;%</th>
+            <th style="width:12%" class="r">Total HT (TND)</th>
+            <th style="width:12%" class="r">Total TTC (TND)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row, rowStat : ${rows}"
+            th:class="${rowStat.odd} ? '' : 'even'">
+            <td class="ref" th:text="${row.reference}">REF</td>
+            <td             th:text="${row.designation}">D&#233;signation</td>
+            <td class="c"   th:text="${row.unite}">t</td>
+            <td class="r"   th:text="${row.quantite}">0,000</td>
+            <td class="r"   th:text="${row.prixUnitaire}">0,000</td>
+            <td class="c"   th:text="${row.tva}">7%</td>
+            <td class="r"   th:text="${row.totalHT}">0,000</td>
+            <td class="r"   th:text="${row.totalTTC}">0,000</td>
+        </tr>
+        <tr th:if="${rows.isEmpty()}" class="no-rows">
+            <td colspan="8">Aucune ligne &#224; afficher.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="bottom-section">
+
+        <div class="bs-left">
+            <div class="section-title" style="margin-bottom:4px;">R&#233;capitulatif TVA</div>
+            <table class="tva-recap-table">
+                <thead>
+                <tr>
+                    <th style="width:22%; text-align:left;">Taux TVA</th>
+                    <th style="width:26%">Base HT (TND)</th>
+                    <th style="width:26%">Montant TVA (TND)</th>
+                    <th style="width:26%">Total TTC (TND)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="tvaRow : ${tvaRecap}">
+                    <td style="text-align:left; font-weight:bold;"
+                        th:text="${tvaRow.taux} + '%'">7%</td>
+                    <td th:text="${tvaRow.baseHT}">0,000</td>
+                    <td th:text="${tvaRow.montantTVA}">0,000</td>
+                    <td th:text="${tvaRow.totalTTC}">0,000</td>
+                </tr>
+                <tr th:if="${tvaRecap.isEmpty()}">
+                    <td colspan="4" style="text-align:center; font-style:italic; color:#666;">&#8212;</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bs-right">
+            <table class="totals-table">
+                <tbody>
+                <tr>
+                    <td class="tl">Montant H.TVA</td>
+                    <td class="tv"><span th:text="${montantHTVA}">0,000</span>&#160;TND</td>
+                </tr>
+                <tr>
+                    <td class="tl">Montant TVA</td>
+                    <td class="tv"><span th:text="${montantTVA}">0,000</span>&#160;TND</td>
+                </tr>
+                <tr>
+                    <td class="tl">Droits de Timbre</td>
+                    <td class="tv"><span th:text="${droitsTimbre}">0,000</span>&#160;TND</td>
+                </tr>
+                <tr class="separator">
+                    <td colspan="2">&#160;</td>
+                </tr>
+                <tr class="ttc">
+                    <td class="tl">Total TTC</td>
+                    <td class="tv"><span th:text="${montantTTC}">0,000</span>&#160;TND</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ── Signatures : pleine largeur, sous toutes les sections — client à gauche, émetteur à droite ── -->
+    <div class="sig-section">
+        <div class="sig-cell left">
+            <div class="sig-label">Cachet &amp; signature client</div>
+            <div class="sig-box">&#160;</div>
+        </div>
+        <div class="sig-cell right">
+            <div class="sig-label">Cachet &amp; signature &#233;metteur</div>
+            <div class="sig-box">&#160;</div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

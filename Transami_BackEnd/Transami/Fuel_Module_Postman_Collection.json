@@ -1,0 +1,473 @@
+{
+  "info": {
+    "name": "Transami - Module Carburant",
+    "description": "Collection complète pour tester le module de gestion du carburant",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Prix Carburant",
+      "item": [
+        {
+          "name": "Créer/Mettre à jour les prix",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prixEssence\": 2.150,\n  \"prixDiesel\": 1.950,\n  \"prixDiesel50\": 2.050\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/prix-carburant",
+              "host": ["{{baseUrl}}"],
+              "path": ["prix-carburant"]
+            }
+          }
+        },
+        {
+          "name": "Obtenir les prix configurés",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prix-carburant",
+              "host": ["{{baseUrl}}"],
+              "path": ["prix-carburant"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Stations",
+      "item": [
+        {
+          "name": "Créer une station",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Station Total Tunis Centre\",\n  \"localisation\": \"Avenue Habib Bourguiba, Tunis\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stations",
+              "host": ["{{baseUrl}}"],
+              "path": ["stations"]
+            }
+          }
+        },
+        {
+          "name": "Obtenir toutes les stations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stations",
+              "host": ["{{baseUrl}}"],
+              "path": ["stations"]
+            }
+          }
+        },
+        {
+          "name": "Obtenir une station par ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stations/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["stations", "1"]
+            }
+          }
+        },
+        {
+          "name": "Modifier une station",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Station Total Tunis Centre Ville\",\n  \"localisation\": \"Avenue Habib Bourguiba, Tunis 1000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stations/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["stations", "1"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer une station",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stations/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["stations", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Bons Carburant",
+      "item": [
+        {
+          "name": "Créer premier bon (pas de consommation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-05-01\",\n  \"camionId\": 1,\n  \"stationId\": 1,\n  \"kilometrageActuel\": 120000,\n  \"quantiteLitres\": 85.5,\n  \"typCarburant\": \"DIESEL\",\n  \"prixLitre\": 1.950,\n  \"commentaire\": \"Premier plein du mois\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant"]
+            }
+          }
+        },
+        {
+          "name": "Créer deuxième bon (consommation BONNE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-05-05\",\n  \"camionId\": 1,\n  \"stationId\": 1,\n  \"kilometrageActuel\": 120450,\n  \"quantiteLitres\": 80.0,\n  \"typCarburant\": \"DIESEL\",\n  \"prixLitre\": 1.950,\n  \"commentaire\": \"Plein après livraison Sfax\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant"]
+            }
+          }
+        },
+        {
+          "name": "Créer troisième bon (consommation MOYENNE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-05-10\",\n  \"camionId\": 1,\n  \"stationId\": 1,\n  \"kilometrageActuel\": 120800,\n  \"quantiteLitres\": 95.0,\n  \"typCarburant\": \"DIESEL\",\n  \"prixLitre\": 1.980,\n  \"commentaire\": \"Plein en ville - trafic dense\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant"]
+            }
+          }
+        },
+        {
+          "name": "Créer bon avec consommation MAUVAISE",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-05-15\",\n  \"camionId\": 1,\n  \"stationId\": 1,\n  \"kilometrageActuel\": 121000,\n  \"quantiteLitres\": 75.0,\n  \"typCarburant\": \"DIESEL\",\n  \"prixLitre\": 1.950,\n  \"commentaire\": \"Consommation anormale - à vérifier\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant"]
+            }
+          }
+        },
+        {
+          "name": "Obtenir tous les bons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant"]
+            }
+          }
+        },
+        {
+          "name": "Filtrer par camion",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant?camionId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant"],
+              "query": [
+                {
+                  "key": "camionId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filtrer par station",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant?stationId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant"],
+              "query": [
+                {
+                  "key": "stationId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtenir un bon par ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant", "1"]
+            }
+          }
+        },
+        {
+          "name": "Modifier un bon",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-05-15\",\n  \"camionId\": 1,\n  \"stationId\": 1,\n  \"kilometrageActuel\": 121000,\n  \"quantiteLitres\": 75.0,\n  \"typCarburant\": \"DIESEL\",\n  \"prixLitre\": 1.950,\n  \"commentaire\": \"Consommation vérifiée - filtre à air changé\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant/4",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant", "4"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer un bon",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant", "1"]
+            }
+          }
+        },
+        {
+          "name": "Statistiques carburant camion",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant/camion/1/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant", "camion", "1", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Tests d'erreurs",
+      "item": [
+        {
+          "name": "Erreur - Kilométrage invalide",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-05-25\",\n  \"camionId\": 1,\n  \"stationId\": 1,\n  \"kilometrageActuel\": 119000,\n  \"quantiteLitres\": 80.0,\n  \"typCarburant\": \"DIESEL\",\n  \"prixLitre\": 1.950,\n  \"commentaire\": \"Test erreur kilométrage\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bons-carburant",
+              "host": ["{{baseUrl}}"],
+              "path": ["bons-carburant"]
+            }
+          }
+        },
+        {
+          "name": "Erreur - Station en doublon",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Station Total Tunis Centre\",\n  \"localisation\": \"Autre adresse\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stations",
+              "host": ["{{baseUrl}}"],
+              "path": ["stations"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

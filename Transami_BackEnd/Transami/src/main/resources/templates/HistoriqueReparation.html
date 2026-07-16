@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xml:lang="fr">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Historique des Réparations</title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 8pt; color: #000; background: #fff; }
+
+        @page {
+            size: A4 landscape;
+            margin-top: 105px;
+            margin-bottom: 85px;   /* augmenté pour le footer récapitulatif */
+            margin-left: 0;
+            margin-right: 0;
+            @top-center    { content: element(pageHeader); }
+            @bottom-center { content: element(pageFooter); }
+        }
+
+        #page-header {
+            position: running(pageHeader);
+            width: 29.7cm; height: 95px;
+            border-bottom: 1px solid #000;
+        }
+        .hdr-outer { display: table; width: 100%; height: 95px; }
+        .hdr-pad   { display: table-cell; vertical-align: middle; padding: 0 28px 0 18px; }
+        .hdr-cols  { display: table; width: 100%; }
+        .hdr-logo-cell { display: table-cell; vertical-align: middle; width: 80px; }
+        .hdr-info-cell { display: table-cell; vertical-align: middle; }
+        .co-logo    { width: 120px; }
+        .co-name    { font-size: 14pt; font-weight: bold; }
+        .co-tagline, .co-coords { font-size: 7pt; }
+
+        /* ─── PIED DE PAGE ─────────────────────────────────────────── */
+        #page-footer {
+            position: running(pageFooter);
+            width: 29.7cm;
+            height: 75px;          /* augmenté pour le tableau récapitulatif */
+        }
+
+        /* Tableau récapitulatif (identique aux autres états) */
+        .totals-table {
+            width: calc(29.7cm - 36px);
+            margin: 0 18px;
+            border-collapse: collapse;
+            border: 1px solid #000;
+        }
+        .totals-table td {
+            padding: 5px 10px;
+            font-size: 8pt;
+            border-right: 1px solid #000;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .totals-table td:last-child { border-right: none; }
+        .totals-table td strong { font-size: 9pt; }
+
+        .ftr-address {
+            border-top: 1px solid #000;
+            margin-top: 6px;
+            padding-top: 6px;
+        }
+        .ftr-outer { display: table; width: 100%; }
+        .ftr-pad   { display: table-cell; vertical-align: middle; padding: 0 28px 0 18px; }
+        .ftr-cols  { display: table; width: 100%; }
+        .ftr-left  { font-size: 7pt; display: table-cell; }
+        .ftr-right { font-size: 7pt; display: table-cell; text-align: right; }
+        .page-num:before { content: "Page " counter(page) " / " counter(pages); }
+
+        /* ─── CONTENU ─────────────────────────────────────────────── */
+        .content { padding: 14px 22px 16px 22px; }
+
+        .report-title {
+            text-align: center; font-size: 15pt;
+            font-weight: bold; text-decoration: underline;
+            margin-bottom: 10px;
+        }
+        .report-meta { display: table; width: 100%; margin-bottom: 10px; }
+        .meta-dates-box {
+            display: table-cell; vertical-align: middle;
+            border: 1px solid #000; padding: 4px 10px;
+            font-size: 9pt; width: 55%;
+        }
+        .meta-edition {
+            display: table-cell; vertical-align: middle;
+            text-align: right; font-size: 8pt;
+            padding-right: 4px; width: 45%;
+        }
+
+        /* ─── TABLEAU PRINCIPAL ────────────────────────────────────── */
+        .bl-table {
+            width: 100%; border-collapse: collapse;
+            border: 1px solid #000; margin-bottom: 0;
+            -fs-table-paginate: paginate;
+        }
+        .bl-table thead { display: table-header-group; }
+        .bl-table th {
+            font-size: 7.5pt; font-weight: bold;
+            text-align: center; padding: 4px 3px;
+            border-bottom: 2px solid #000;
+            border-right: 1px solid #000;
+            background-color: #e8e8e8;
+            white-space: nowrap;
+        }
+        .bl-table td {
+            padding: 4px; font-size: 7.5pt;
+            border-bottom: 1px solid #ccc;
+            border-right: 1px solid #000;
+            vertical-align: middle;
+        }
+        .bl-table th:last-child,
+        .bl-table td:last-child { border-right: none; }
+        .bl-table td.r   { text-align: right; }
+        .bl-table td.c   { text-align: center; }
+        .bl-table td.num { font-weight: bold; }
+        .bl-table tbody tr.even { background-color: #f7f7f7; }
+        .bl-table tbody tr { page-break-inside: avoid; }
+        .no-rows td {
+            text-align: center; font-style: italic;
+            color: #666; padding: 16px;
+        }
+
+        /* .bl-table-footer supprimé car plus utilisé */
+    </style>
+</head>
+<body>
+
+<!-- EN-TÊTE -->
+<div id="page-header">
+    <div class="hdr-outer"><div class="hdr-pad"><div class="hdr-cols">
+        <div class="hdr-logo-cell" th:if="${companyLogo != null and !#strings.isEmpty(companyLogo)}">
+            <img class="co-logo" th:src="${companyLogo}" alt="Logo"/>
+        </div>
+        <div class="hdr-info-cell">
+            <div class="co-name"    th:text="${companyName}">Nom Entreprise</div>
+            <div class="co-tagline">Transport de marchandises</div>
+            <div class="co-tagline">TVA&#160;: <span th:text="${companyTva}"></span></div>
+            <div class="co-coords">Adresse&#160;: <span th:text="${companyAddress}"></span></div>
+            <div class="co-coords">T&#233;l&#160;: <span th:text="${companyPhone}"></span></div>
+            <div class="co-coords">E-mail&#160;: <span th:text="${companyEmail}"></span></div>
+        </div>
+    </div></div></div>
+</div>
+
+<!-- PIED DE PAGE (modifié : tableau récapitulatif + adresse) -->
+<div id="page-footer">
+
+    <!-- Tableau récapitulatif des totaux (affiché seulement s'il y a des lignes) -->
+    <table class="totals-table" th:if="${not #lists.isEmpty(lignes)}">
+        <colgroup>
+            <col style="width:50%"/><col style="width:50%"/>
+        </colgroup>
+        <tbody>
+        <tr>
+            <td>Nbre de réparations&#160;: <strong th:text="${nombreReparations}">0</strong></td>
+            <td>Coût total (TND)&#160;: <strong th:text="${totalCout}">0,000</strong></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Ligne d'adresse + numéro de page -->
+    <div class="ftr-address">
+        <div class="ftr-outer">
+            <div class="ftr-pad">
+                <div class="ftr-cols">
+                    <div class="ftr-left">
+                        <span th:text="${companyName}"></span>&#160;&#183;&#160;
+                        <span th:text="${companyAddress}"></span>&#160;&#183;&#160;
+                        T&#233;l&#160;: <span th:text="${companyPhone}"></span>&#160;&#183;&#160;
+                        <span th:text="${companyEmail}"></span>
+                    </div>
+                    <div class="ftr-right"><span class="page-num">&#160;</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENU -->
+<div class="content">
+
+    <div class="report-title">Historique des R&#233;parations</div>
+
+    <div class="report-meta">
+        <div class="meta-dates-box">
+            P&#233;riode&#160;: de <strong th:text="${dateFrom}"></strong>
+            &#160;&#224;&#160; <strong th:text="${dateTo}"></strong>
+            <span th:if="${camionMatricule != null}">&#160;&#183;&#160; Camion&#160;: <strong th:text="${camionMatricule}"></strong></span>
+        </div>
+        <div class="meta-edition">
+            Date &#233;dition&#160;: <strong th:text="${dateEdition}"></strong>
+        </div>
+    </div>
+
+    <!-- TABLEAU PRINCIPAL (sans tfoot) -->
+    <table class="bl-table">
+        <thead>
+        <tr>
+            <th style="width:10%">Date</th>
+            <th style="width:15%">Camion</th>
+            <th style="width:25%">Type de R&#233;paration</th>
+            <th style="width:15%">Co&#251;t (TND)</th>
+            <th style="width:35%">Notes</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row, rowStat : ${lignes}"
+            th:class="${rowStat.odd} ? '' : 'even'">
+            <td class="c"  th:text="${row.date}">01/01/2026</td>
+            <td            th:text="${row.camionMatricule}">TRUCK-001</td>
+            <td            th:text="${row.typeReparation}">Vidange</td>
+            <td class="r"  th:text="${row.cout}">0,000</td>
+            <td            th:text="${row.notes}">—</td>
+        </tr>
+        <tr th:if="${lignes.isEmpty()}" class="no-rows">
+            <td colspan="5">Aucune r&#233;paration trouv&#233;e pour cette p&#233;riode.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Le tableau bl-table-footer a été supprimé : les totaux sont maintenant dans le footer -->
+
+</div>
+</body>
+</html>
