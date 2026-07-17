@@ -1,0 +1,7 @@
+target
+uploads
+*.md
+*.sql
+.git
+.idea
+*.iml
