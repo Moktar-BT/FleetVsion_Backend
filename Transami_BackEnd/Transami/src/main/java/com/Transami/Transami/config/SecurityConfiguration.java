@@ -58,7 +58,8 @@ public class SecurityConfiguration {
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "http://localhost:3001",
-                "http://localhost:4200"
+                "http://localhost:4200",
+                "fleetvision-git-main-moktar-bts-projects.vercel.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
