@@ -1,7 +1,7 @@
 {
   "builds": [
     {
-      "src": "pom.xml",
+      "src": "Transami_BackEnd/Transami/pom.xml",
       "use": "@vercel/java"
     }
   ],
