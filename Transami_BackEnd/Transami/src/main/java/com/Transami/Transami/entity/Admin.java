@@ -50,6 +50,7 @@ public class Admin implements UserDetails {
     // Remplacement du champ "telephone" par une collection
     @ElementCollection
     @CollectionTable(name = "admin_telephones", joinColumns = @JoinColumn(name = "admin_id"))
+    @OrderColumn(name = "telephone_order")
     @Column(name = "telephone")
     private List<String> telephones = new ArrayList<>();
 
