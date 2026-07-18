@@ -59,7 +59,10 @@ public class SecurityConfiguration {
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "http://localhost:4200",
-                "fleetvision-git-main-moktar-bts-projects.vercel.app"d
+                "https://fleetvision-git-main-moktar-bts-projects.vercel.app"
+        ));
+        config.setAllowedOriginPatterns(List.of(
+                "https://*.vercel.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
