@@ -90,12 +90,32 @@ public class BonCarburantService {
 
         BonCarburant saved = bonCarburantDao.save(bon);
 
-        // ── Mise à jour du bon précédent (distance + consommation) ────────────
+        // ── Calcul distance + consommation du bon nouvellement créé ───────────
+        // distance = km(bon actuel) - km(bon précédent du même camion)
+        // consommation = litres(bon actuel) / distance * 100
         updatePreviousBon(saved, adminId);
 
+        // ── Si le nouveau bon s'insère AVANT un bon déjà existant           ──
+        // ── (kilométrage du nouveau bon < kilométrage d'un bon existant),   ──
+        // ── alors ce bon existant a désormais un nouveau "bon précédent"    ──
+        // ── (le bon qu'on vient de créer) : il faut recalculer sa distance  ──
+        // ── et sa consommation.                                             ──
+        BonCarburant nextExisting = findNextBonOf(saved, adminId);
+        if (nextExisting != null) {
+            updatePreviousBon(nextExisting, adminId);
+        }
+
         // ── Mise à jour kilométrage camion ────────────────────────────────────
-        camion.setMileage(saved.getKilometrageActuel());
-        camionDao.save(camion);
+        // On ne met à jour le kilométrage du camion que si le nouveau bon est
+        // bien le plus récent (kilométrage le plus élevé) ; sinon on garde le
+        // kilométrage du bon le plus élevé existant.
+        bonCarburantDao.findAllByCamionIdAndAdminId(camion.getId(), adminId)
+                .stream()
+                .max(Comparator.comparingDouble(BonCarburant::getKilometrageActuel))
+                .ifPresent(dernierBon -> {
+                    camion.setMileage(dernierBon.getKilometrageActuel());
+                    camionDao.save(camion);
+                });
 
         stationService.recalculerTotaux(station.getId());
 
@@ -180,6 +200,12 @@ public class BonCarburantService {
             bonCarburantDao.findPreviousBon(
                             camion.getId(), adminId, oldKilometrage, id)
                     .ifPresent(prev -> updatePreviousBon(findNextBonOf(prev, adminId), adminId));
+        }
+
+        // ── Recalculer le bon qui suit désormais le bon mis à jour (si besoin) ─
+        BonCarburant nextExisting = findNextBonOf(saved, adminId);
+        if (nextExisting != null) {
+            updatePreviousBon(nextExisting, adminId);
         }
 
         // ── Mise à jour kilométrage camion ────────────────────────────────────
@@ -328,6 +354,18 @@ public class BonCarburantService {
     // Helpers privés
     // ─────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Calcule la distance parcourue et la consommation réelle d'un bon (nextBon)
+     * par rapport à SON bon précédent (kilométrage juste en dessous, même camion,
+     * même admin).
+     *
+     * distance      = km(nextBon) - km(bon précédent)
+     * consommation  = litres(nextBon) / distance * 100     (L/100km)
+     *
+     * Logique métier : le camion fait le plein à chaque bon. La consommation
+     * associée à un bon représente donc la conso réalisée DEPUIS le plein
+     * précédent JUSQU'À ce bon, avec la quantité de litres reversée à CE bon.
+     */
     private void updatePreviousBon(BonCarburant nextBon, Long adminId) {
         if (nextBon == null) return;
         bonCarburantDao.findPreviousBon(
@@ -335,7 +373,7 @@ public class BonCarburantService {
                         adminId,
                         nextBon.getKilometrageActuel(),
                         nextBon.getId())
-                .ifPresent(prev -> {
+                .ifPresentOrElse(prev -> {
                     double distance = nextBon.getKilometrageActuel() - prev.getKilometrageActuel();
                     nextBon.setDistanceParcourue(distance);
                     if (distance > 0) {
@@ -344,7 +382,11 @@ public class BonCarburantService {
                         nextBon.setConsommationReelle(null);
                     }
                     bonCarburantDao.save(nextBon);
-                    bonCarburantDao.save(prev);
+                }, () -> {
+                    // Aucun bon précédent (c'est le premier bon du camion)
+                    nextBon.setDistanceParcourue(0.0);
+                    nextBon.setConsommationReelle(null);
+                    bonCarburantDao.save(nextBon);
                 });
     }
 
