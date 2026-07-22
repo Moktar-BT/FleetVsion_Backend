@@ -339,10 +339,11 @@ public class BonCarburantService {
                     double distance = nextBon.getKilometrageActuel() - prev.getKilometrageActuel();
                     nextBon.setDistanceParcourue(distance);
                     if (distance > 0) {
-                        prev.setConsommationReelle((nextBon.getQuantiteLitres() / distance) * 100);
+                        nextBon.setConsommationReelle((nextBon.getQuantiteLitres() / distance) * 100);
                     } else {
-                        prev.setConsommationReelle(null);
+                        nextBon.setConsommationReelle(null);
                     }
+                    bonCarburantDao.save(nextBon);
                     bonCarburantDao.save(prev);
                 });
     }
