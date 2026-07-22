@@ -337,7 +337,7 @@ public class BonCarburantService {
                         nextBon.getId())
                 .ifPresent(prev -> {
                     double distance = nextBon.getKilometrageActuel() - prev.getKilometrageActuel();
-                    prev.setDistanceParcourue(distance);
+                    nextBon.setDistanceParcourue(distance);
                     if (distance > 0) {
                         prev.setConsommationReelle((nextBon.getQuantiteLitres() / distance) * 100);
                     } else {
