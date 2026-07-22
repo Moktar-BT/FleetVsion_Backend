@@ -11,14 +11,18 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "bons_carburant")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"camion", "station"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BonCarburant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "admin_id", nullable = false)

@@ -1,4 +1,3 @@
-// src/main/java/com/Transami/Transami/entity/Camion.java
 package com.Transami.Transami.entity;
 
 import com.Transami.Transami.enums.FuelType;
@@ -12,14 +11,18 @@ import java.util.List;
 @Entity
 @Table(name = "camions",
         uniqueConstraints = @UniqueConstraint(columnNames = {"matricule", "admin_id"}))
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"chauffeur", "admin", "bonsDeLivraison", "bonsCarburant", "reparations"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Camion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotBlank(message = "Le matricule est obligatoire")
