@@ -174,6 +174,32 @@ public class BonCarburantService {
         Long oldStationId = bon.getStation().getId();
         Double oldKilometrage = bon.getKilometrageActuel();
 
+        // ── Validation kilométrage : doit rester dans l'intervalle des bons voisins ──
+        // On cherche les voisins du bon À SA POSITION ACTUELLE (avant modification),
+        // en excluant le bon lui-même, pour définir la plage [precedent, suivant]
+        // dans laquelle le nouveau kilométrage doit obligatoirement se situer.
+        bonCarburantDao.findPreviousBon(camion.getId(), adminId, oldKilometrage, id)
+                .ifPresent(prev -> {
+                    if (request.getKilometrageActuel() <= prev.getKilometrageActuel()) {
+                        throw new RuntimeException(
+                                "Le kilométrage saisi (" + request.getKilometrageActuel() +
+                                        " km) doit être supérieur au kilométrage du bon précédent « " +
+                                        (prev.getNumero() != null ? prev.getNumero() : prev.getId()) +
+                                        " » (" + prev.getKilometrageActuel() + " km)");
+                    }
+                });
+
+        bonCarburantDao.findNextBon(camion.getId(), adminId, oldKilometrage, id)
+                .ifPresent(next -> {
+                    if (request.getKilometrageActuel() >= next.getKilometrageActuel()) {
+                        throw new RuntimeException(
+                                "Le kilométrage saisi (" + request.getKilometrageActuel() +
+                                        " km) doit être inférieur au kilométrage du bon suivant « " +
+                                        (next.getNumero() != null ? next.getNumero() : next.getId()) +
+                                        " » (" + next.getKilometrageActuel() + " km)");
+                    }
+                });
+
         BigDecimal montantTotal = BigDecimal.valueOf(request.getQuantiteLitres())
                 .multiply(request.getPrixLitre())
                 .setScale(2, RoundingMode.HALF_UP);
@@ -270,6 +296,61 @@ public class BonCarburantService {
                 );
 
         stationService.recalculerTotaux(stationId);
+    }
+
+    // ── Réparation / recalcul des données existantes ────────────────────────────
+
+    /**
+     * Recalcule distanceParcourue + consommationReelle pour TOUS les bons
+     * d'un camion, dans l'ordre croissant de kilométrage. À utiliser une fois
+     * pour corriger des données historiques calculées avec l'ancienne logique
+     * buggée (ex: bons insérés dans le désordre).
+     *
+     * Le premier bon (le plus petit kilométrage) reçoit toujours
+     * distance = 0 et consommation = null, car il n'a pas de prédécesseur.
+     */
+    @Transactional
+    public void recalculerHistoriqueCamion(Long camionId, Long adminId) {
+        camionDao.findByIdAndAdminId(camionId, adminId)
+                .orElseThrow(() -> new RuntimeException("Camion non trouvé ou accès refusé"));
+
+        List<BonCarburant> bons = bonCarburantDao.findAllByCamionIdAndAdminId(camionId, adminId)
+                .stream()
+                .sorted(Comparator.comparingDouble(BonCarburant::getKilometrageActuel))
+                .collect(Collectors.toList());
+
+        BonCarburant prev = null;
+        for (BonCarburant current : bons) {
+            if (prev == null) {
+                current.setDistanceParcourue(0.0);
+                current.setConsommationReelle(null);
+            } else {
+                double distance = current.getKilometrageActuel() - prev.getKilometrageActuel();
+                current.setDistanceParcourue(distance);
+                current.setConsommationReelle(distance > 0
+                        ? (current.getQuantiteLitres() / distance) * 100
+                        : null);
+            }
+            bonCarburantDao.save(current);
+            prev = current;
+        }
+
+        // Recaler le kilométrage du camion sur le bon le plus récent
+        if (!bons.isEmpty()) {
+            Camion camion = camionDao.findByIdAndAdminId(camionId, adminId).orElseThrow();
+            camion.setMileage(bons.get(bons.size() - 1).getKilometrageActuel());
+            camionDao.save(camion);
+        }
+    }
+
+    /**
+     * Recalcule l'historique de TOUS les camions d'un admin.
+     * Pratique pour une réparation globale en une seule fois.
+     */
+    @Transactional
+    public void recalculerHistoriqueTousCamions(Long adminId) {
+        camionDao.findAllByAdminId(adminId)
+                .forEach(camion -> recalculerHistoriqueCamion(camion.getId(), adminId));
     }
 
     // ── Stats par camion ──────────────────────────────────────────────────────
